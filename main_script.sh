@@ -58,7 +58,7 @@ echo -e "${LPURPLE}========================================================${YEL
 configuring_basic_html_page() {
 roll "Configuring a placeholder HTML landing page..."
 touch /var/www/html/index.html
-echo "Nick was hier eventjes, maar hij is ervandoor gegaan... <b>EPIC</b>" >> /var/ww/html/index.html
+echo "Nick was hier eventjes, maar hij is ervandoor gegaan... <b>EPIC</b>" >> /var/www/html/index.html
 echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
