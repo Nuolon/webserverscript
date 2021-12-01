@@ -26,8 +26,8 @@ roll() {
 
 install_httpd_apache() {
 roll "Starting installation of \"httpd\" (apache) webserver via dnf..."
-#dnf -y install httpd
-apt-get install httpd
+dnf -y install httpd
+#apt-get install httpd
 roll "Done!"
 }
 
