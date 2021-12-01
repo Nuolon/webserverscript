@@ -8,6 +8,7 @@ LPURPLE='\033[1;35m'
 YEL='\033[1;33m'
 BLINKRED='\033[5;31m'
 BLINKPURP='\033[5;35m'
+CYAN='\033[1;36m'
 
 #Function to let text appear in a rolling-out fashion
 roll() {
@@ -24,11 +25,23 @@ roll() {
   done ; echo ""
 }
 
+start() {
+echo -e "${BLINKPURP}###${NC} ${RED}Welcome to${NC} ${LPURPLE}Nick's${NC} ${RED}httpd/apache webserver roll-out script${NC}${BLINKPURP} ###${NC}{$YEL}"
+read -p "${CYAN}Please make sure you run this script as ${BLINKRED}privileged user${CYAN}, are you?${YEL} [Y/N]" -n 1 -r
+echo ""
+if [[ $REPLY =~ ^[Nn]$  ]]
+then
+	exit 1
+fi
+
+}
+
 install_httpd_apache() {
 roll "Starting installation of \"httpd\" (apache) webserver via dnf..."
 dnf -y install httpd
 #apt-get install httpd
 roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
 }
 
 start_and_enable_httpd_systemctl() {
@@ -36,33 +49,40 @@ roll "Starting httpd and enabling it to run on boot..."
 systemctl enable httpd
 systemctl start httpd
 roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
 }
 
 configuring_basic_html_page() {
 roll "Configuring a placeholder HTML landing page..."
 touch /var/www/html/index.html
-echo "Nick was hier eventjes, maar hij is ervandoor gegaan... <b>EPIC</b>"
-roll "Done!" 
+echo "Nick was hier eventjes, maar hij is ervandoor gegaan... <b>EPIC</b>" >> /var/ww/html/index.html
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
 }
 
 basic_html_page_check() {
-roll "Opening FireFox to localhost to try and present the webpage; please confirm it works [Y/N]"
-firefox 127.0.0.1
-read -p "Did the website with the text: 'Nick was hier eventjes...' pop up? " -n 1 -r
+roll "Open FireFox to 127.0.0.1; please confirm it works [Y/N]"
+read -p "Did the website pop up? " -n 1 -r
 echo ""
 if [[ $REPLY =~ ^[Nn]$ ]]
 then
     echo -e  "${RED}User acknowledged webpage failure; stopping...${NC}"
 	exit -1
 fi
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
 }
 
 configure_firewall() {
+roll "Configuring firewall settings..."
 firewall-cmd --add-service=http
 firewall-cmd --add-service=https
 firewall-cmd --runtime-to-permanent
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
 }
 
+start
 install_httpd_apache
 start_and_enable_httpd_systemctl
 configuring_basic_html_page
