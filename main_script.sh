@@ -41,7 +41,7 @@ fi
 install_httpd_apache() {
 roll "Starting installation of \"httpd\" (apache) webserver via dnf..."
 dnf -y install httpd
-#apt-get install httpd
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
@@ -50,6 +50,7 @@ start_and_enable_httpd_systemctl() {
 roll "Starting httpd and enabling it to run on boot..."
 systemctl enable httpd
 systemctl start httpd
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
@@ -58,6 +59,7 @@ configuring_basic_html_page() {
 roll "Configuring a placeholder HTML landing page..."
 touch /var/www/html/index.html
 echo "Nick was hier eventjes, maar hij is ervandoor gegaan... <b>EPIC</b>" >> /var/ww/html/index.html
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
@@ -71,6 +73,7 @@ then
     echo -e  "${RED}User acknowledged webpage failure; stopping...${NC}"
 	exit -1
 fi
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
