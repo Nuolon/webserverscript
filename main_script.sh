@@ -38,6 +38,10 @@ fi
 
 }
 
+change_hostname() {
+hostnamectl set-hostname webserver-httpd
+}
+
 install_httpd_apache() {
 roll "Starting installation of \"httpd\" (apache) webserver via dnf..."
 dnf -y install httpd
@@ -89,6 +93,7 @@ echo -e "${LPURPLE}========================================================${NRM
 }
 
 start
+change_hostname
 install_httpd_apache
 start_and_enable_httpd_systemctl
 configuring_basic_html_page
