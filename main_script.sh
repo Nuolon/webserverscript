@@ -9,6 +9,7 @@ YEL='\033[1;33m'
 BLINKRED='\033[5;31m'
 BLINKPURP='\033[5;35m'
 CYAN='\033[1;36m'
+NRML='\033[0;37m'
 
 #Function to let text appear in a rolling-out fashion
 roll() {
@@ -80,7 +81,7 @@ firewall-cmd --add-service=http
 firewall-cmd --add-service=https
 firewall-cmd --runtime-to-permanent
 roll "Done!"
-echo -e "${LPURPLE}========================================================${YEL}"
+echo -e "${LPURPLE}========================================================${NRML}"
 }
 
 start
