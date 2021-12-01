@@ -26,9 +26,10 @@ roll() {
 }
 
 start() {
-echo -e "${BLINKPURP}###${NC} ${RED}Welcome to${NC} ${LPURPLE}Nick's${NC} ${RED}httpd/apache webserver roll-out script${NC}${BLINKPURP} ###${NC}{$YEL}"
-read -p "${CYAN}Please make sure you run this script as ${BLINKRED}privileged user${CYAN}, are you?${YEL} [Y/N]" -n 1 -r
-echo ""
+echo -e "${BLINKPURP}###${NC} ${RED}Welcome to${NC} ${LPURPLE}Nick's${NC} ${RED}httpd/apache webserver roll-out script${NC}${BLINKPURP} ###${NC}"
+echo -e "${CYAN}Please make sure you run this script as${NC}${RED} privileged user${NC}${CYAN}, are you?${NC}${YEL} [Y/N] ${NC}"
+read -p "Input: " -n 1 -r
+echo "${YEL}"
 if [[ $REPLY =~ ^[Nn]$  ]]
 then
 	exit 1
@@ -37,7 +38,7 @@ fi
 }
 
 install_httpd_apache() {
-roll "Starting installation of \"httpd\" (apache) webserver via dnf..."
+roll "${YEL}Starting installation of \"httpd\" (apache) webserver via dnf..."
 dnf -y install httpd
 #apt-get install httpd
 roll "Done!"
