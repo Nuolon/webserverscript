@@ -83,6 +83,7 @@ roll "Configuring firewall settings..."
 firewall-cmd --add-service=http
 firewall-cmd --add-service=https
 firewall-cmd --runtime-to-permanent
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${NRML}"
 }
