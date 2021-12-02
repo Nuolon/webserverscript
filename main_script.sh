@@ -39,7 +39,7 @@ fi
 }
 
 change_hostname() {
-hostnamectl set-hostname webserver-httpd
+hostnamectl set-hostname G05-Web01
 }
 
 install_httpd_apache() {
