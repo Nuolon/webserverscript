@@ -39,6 +39,7 @@ fi
 }
 
 selinux_passive() {
+roll "Configuring selinux..."
 setenforce 0
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 echo -e "${YEL}"
@@ -108,7 +109,7 @@ echo -e "${LPURPLE}========================================================${YEL
 
 configure_moodle() {
 
-cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
+#cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/html/moodle/config.php
@@ -151,7 +152,7 @@ echo -e "${LPURPLE}========================================================${NRM
 }
 
 end() {
-echo e- "${CYAN}^_^ Script completed, Moodle is reachable on: moodle.groep5.local ^_^${NC}${NRML}"
+echo -e "${CYAN}^_^ Script completed, Moodle is reachable on: moodle.groep5.local ^_^${NC}${NRML}"
 }
 
 start
