@@ -113,7 +113,7 @@ echo -e "${LPURPLE}========================================================${YEL
 
 install_PHPreqsForHttpd() {
 roll "Starting download of PHP and good-to-have modules..."
-dnf install php php-common php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-gd php-mbstring php-xml php-json php-pecl-zip libzip php-intl
+dnf -y install php php-common php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-gd php-mbstring php-xml php-json php-pecl-zip libzip php-intl
 roll "Restarting Apache/httpd and configuring a PHP test site..."
 systemctl restart httpd
 touch /var/www/html/test.php
