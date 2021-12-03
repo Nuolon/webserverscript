@@ -67,6 +67,15 @@ roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
 
+install_mariaDB() {
+echo -e "${YEL}"
+dnf install -y mariadb-server
+dnf install -y mariadb
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+}
+
 install_httpd_apache() {
 echo -e "${YEL}"
 roll "Starting installation of \"httpd\" (apache) webserver via dnf..."
@@ -184,6 +193,7 @@ change_hostname
 installing_dnf_utils
 install_httpd_apache
 install_PHPreqsForHttpd
+install_mariaDB
 start_and_enable_httpd_systemctl
 download_install_permissions_for_moodle
 configure_mariaDB_for_moodle
