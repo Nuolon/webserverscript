@@ -39,7 +39,11 @@ fi
 }
 
 change_hostname() {
+roll "Changing hostname to: G05-Web01"
 hostnamectl set-hostname G05-Web01
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
 }
 
 install_httpd_apache() {
@@ -81,22 +85,28 @@ fi
 echo -e "${YEL}"
 roll "Removing test page to make room for Moodle..."
 rm /var/www/html/index.html
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
 
-install_mariaDB() {
+install_mariaDB_and_configure() {
 roll "Installing mariaDB server package..."
-dnf install mariadb-server
+dnf -y install mariadb-server
 roll "Enabling MariaDB server and putting it on auto-boot..."
 systemctl restart mariadb
 systemctl enable mariadb
 roll "Secure configuring MariaDB server through forcing root password, remove anonymous user and test database..."
-mysql -e "UPDATE mysql.user SET Password = PASSWORD('Pa$$w0rd!') WHERE User = 'root'"
+# mysql -e "UPDATE mysql.user SET Password = PASSWORD('Pa$$w0rd!') WHERE User = 'root'"
 mysql -e "DROP USER ''@'localhost'"
 mysql -e "DROP USER ''@'$(hostname)'"
 mysql -e "DROP DATABASE test"
-mysql -e "FLUSH PRIVILEGES"
+roll "Configuring MariaDB for use in moodle..."
+mysql -e "CREATE DATABASE moodledb;"
+mysql -e "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY  TABLES,DROP,INDEX,ALTER ON moodledb.* TO 'moodleadmin'@'localhost' IDENTIFIED BY 'Admin';"
+mysql -e "UPDATE mysql.user SET Password = PASSWORD('Pa$$w0rd!') WHERE User = 'root';FLUSH PRIVILEGES;"
+
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
@@ -129,6 +139,7 @@ roll "Configuring MariaDB for use in moodle..."
 mysql -e "CREATE DATABASE moodledb;"
 mysql -e "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY  TABLES,DROP,INDEX,ALTER ON moodledb.* TO 'moodleadmin'@'localhost' IDENTIFIED BY 'Admin';"
 mysql -e "FLUSH PRIVILEGES;"
+echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
@@ -153,9 +164,39 @@ chcon -R --type httpd_sys_rw_content_t /var/www/moodledata/
 chcon -R --type httpd_sys_rw_content_t /var/www/html/moodle/
 setsebool -P httpd_can_network_connect 1
 systemctl restart httpd
+echo -e "${YEL}"
+roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
 
+configure_moodle() {
+cat >/etc/httpd/conf.d/moodle.conf <<EOL
+<VirtualHost *:80>
+ ServerName moodle.ijselu.local
+ DocumentRoot /var/www/html/moodle
+ DirectoryIndex index.php
+<Directory /var/www/html/moodle/>
+ Options Indexes FollowSymLinks MultiViews
+ AllowOverride All
+ Order allow,deny
+ allow from all
+</Directory>
+ ErrorLog /var/log/httpd/moodle_error.log
+ CustomLog /var/log/httpd/moodle_access.log combined
+</VirtualHost>
+EOL
+
+
+sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/moodle/html/config.php
+sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/moodle/html/config.php
+sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/moodle/html/config.php
+sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''AdminXO'\'';\' /var/www/moodle/html/config.php
+sed -i 's#$CFG->wwwroot   = '\''http://example.com/moodle'\'';#$CFG->wwwroot   = '\''http://moodle.groep5.local'\'';#' /var/www/moodle/html/config.php
+sed -i 's#$CFG->dataroot  = '\''\/home\/example\/moodledata'\'';#$CFG->dataroot  = '\''\/var\/www\/moodledata'\'';#' /var/www/moodle/html/config.php
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+}
 configure_firewall() {
 roll "Configuring firewall settings..."
 firewall-cmd --add-service=http
@@ -174,8 +215,8 @@ install_httpd_apache
 start_and_enable_httpd_systemctl
 configuring_basic_html_page
 basic_html_page_check
-install_mariaDB
+install_mariaDB_and_configure
 install_PHPreqsForHttpd
-configure_mariaDB_for_moodle
 install_moodle
+configure_moodle
 configure_firewall
