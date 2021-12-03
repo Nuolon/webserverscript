@@ -127,8 +127,8 @@ configure_mariaDB_for_moodle() {
 roll "Configuring mariadb for moodle..."
 systemctl start mariadb
 systemctl enable mariadb
-systemctl start mariadb-server
-systemctl enable mariadb-server
+#systemctl start mariadb-server
+#systemctl enable mariadb-server
 mysql -e "DELETE FROM mysql.user WHERE User='';"
 mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
 #mysql -e "DROP DATABASE test;DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';"
@@ -160,12 +160,12 @@ cat >/etc/httpd/conf.d/moodle.conf <<EOL
 EOL
 
 cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
-sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''Gengar'\'';\' /var/www/html/moodle/config.php
-sed -i 's#$CFG->wwwroot   = '\''http://example.com/moodle'\'';#$CFG->wwwroot   = '\''http://moodle.groep5.local'\'';#' /var/www/html/moodle/config.php
-sed -i 's#$CFG->dataroot  = '\''\/home\/example\/moodledata'\'';#$CFG->dataroot  = '\''\/var\/www\/moodledata'\'';#' /var/www/html/moodle/config.php
+sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/moodle/config.php
+sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/moodle/config.php
+sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/moodle/config.php
+sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''Gengar'\'';\' /var/www/moodle/config.php
+sed -i 's#$CFG->wwwroot   = '\''http://example.com/moodle'\'';#$CFG->wwwroot   = '\''http://moodle.groep5.local'\'';#' /var/www/moodle/config.php
+sed -i 's#$CFG->dataroot  = '\''\/home\/example\/moodledata'\'';#$CFG->dataroot  = '\''\/var\/www\/moodledata'\'';#' /var/www/moodle/config.php
 echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
