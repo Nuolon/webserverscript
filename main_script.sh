@@ -38,6 +38,14 @@ fi
 
 }
 
+selinux_passive() {
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+}
+
 change_hostname() {
 roll "Changing hostname to: G05-Web01"
 hostnamectl set-hostname G05-Web01
@@ -46,9 +54,29 @@ roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
 
+installing_dnf_utils() {
+dnf install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+dnf module enable -y php:remi-7.4
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+}
+
 install_httpd_apache() {
 roll "Starting installation of \"httpd\" (apache) webserver via dnf..."
 dnf -y install httpd
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+}
+install_PHPreqsForHttpd() {
+roll "Starting download of PHP and good-to-have modules..."
+dnf -y install php php-common php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-gd php-mbstring php-xml php-json php-pecl-zip libzip php-intl
+roll "Restarting Apache/httpd and configuring a PHP test site..."
+systemctl restart httpd
+touch /var/www/html/test.php
+roll "Changing permissions on /var/www/html/ to allow editing..."
+sudo chmod 777 /var/www/html -R
 echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
@@ -63,116 +91,25 @@ roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
 
-configuring_basic_html_page() {
-roll "Configuring a placeholder HTML landing page..."
-touch /var/www/html/index.html
-echo "Nick was hier eventjes, maar hij is ervandoor gegaan... <b>EPIC</b>" >> /var/www/html/index.html
+download_install_permissions_for_moodle() {
+wget -c https://download.moodle.org/download.php/direct/stable311/moodle-3.11.4.tgz
+tar -xzf moodle-3.11.4.tgz -C /var/www/
+chmod 775 -R /var/www/moodle
+chown apache:apache -R /var/www/moodle
+mkdir -p /var/www/moodledata
+chmod 770 -R /var/www/moodledata
+chown apache:apache -R /var/www/moodledata
+cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
 echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
 
-basic_html_page_check() {
-gnome-terminal -- sh -c 'firefox 127.0.0.1'
-roll "Opened FireFox to 127.0.0.1; please confirm it works [Y/N]"
-read -p "Did the website pop up? " -n 1 -r
-echo ""
-if [[ $REPLY =~ ^[Nn]$ ]]
-then
-    echo -e  "${RED}User acknowledged webpage failure; stopping...${NC}"
-	exit -1
-fi
-echo -e "${YEL}"
-roll "Removing test page to make room for Moodle..."
-rm /var/www/html/index.html
-echo -e "${YEL}"
-roll "Done!"
-echo -e "${LPURPLE}========================================================${YEL}"
-}
-
-install_mariaDB_and_configure() {
-roll "Installing mariaDB server package..."
-dnf -y install mariadb-server
-roll "Enabling MariaDB server and putting it on auto-boot..."
-systemctl restart mariadb
-systemctl enable mariadb
-roll "Secure configuring MariaDB server through forcing root password, remove anonymous user and test database..."
-# mysql -e "UPDATE mysql.user SET Password = PASSWORD('Pa$$w0rd!') WHERE User = 'root'"
-mysql -e "DROP USER ''@'localhost'"
-mysql -e "DROP USER ''@'$(hostname)'"
-mysql -e "DROP DATABASE test"
-roll "Configuring MariaDB for use in moodle..."
-mysql -e "CREATE DATABASE moodledb;"
-mysql -e "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY  TABLES,DROP,INDEX,ALTER ON moodledb.* TO 'moodleadmin'@'localhost' IDENTIFIED BY 'Admin';"
-mysql -e "UPDATE mysql.user SET Password = PASSWORD('Pa$$w0rd!') WHERE User = 'root';FLUSH PRIVILEGES;"
-
-echo -e "${YEL}"
-roll "Done!"
-echo -e "${LPURPLE}========================================================${YEL}"
-}
-
-install_PHPreqsForHttpd() {
-roll "Starting download of PHP and good-to-have modules..."
-dnf -y install php php-common php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-gd php-mbstring php-xml php-json php-pecl-zip libzip php-intl
-roll "Restarting Apache/httpd and configuring a PHP test site..."
-systemctl restart httpd
-touch /var/www/html/test.php
-roll "Changing permissions on /var/www/html/ to allow editing..."
-sudo chmod 777 /var/www/html -R
-echo "<?php phpinfo(); ?>" >> /var/www/html/test.php
-gnome-terminal -- sh -c 'firefox 127.0.0.1/test.php'
-roll "Opened FireFox to 127.0.0.1/test.php; please confirm it works [Y/N]"
-read -p "Did the website pop up with PHP info?" -n 1 -r
-echo ""
-if [[ $REPLY =~ ^[Nn]$ ]]
-then
-	echo -e "${RED}User acknowledged webpage failure; stopping...${NC}"
-		exit -1
-fi
-echo -e "${YEL}"
-roll "Done!"
-echo -e "${LPURPLE}========================================================${YEL}"
-}
-
-configure_mariaDB_for_moodle() {
-roll "Configuring MariaDB for use in moodle..."
-mysql -e "CREATE DATABASE moodledb;"
-mysql -e "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY  TABLES,DROP,INDEX,ALTER ON moodledb.* TO 'moodleadmin'@'localhost' IDENTIFIED BY 'Admin';"
-mysql -e "FLUSH PRIVILEGES;"
-echo -e "${YEL}"
-roll "Done!"
-echo -e "${LPURPLE}========================================================${YEL}"
-}
-
-install_moodle() {
-roll "Downloading Moodle 'latest' 3.9..."
-wget -c https://download.moodle.org/download.php/direct/stable39/moodle-latest-39.tgz
-roll "Moving files to /var/www/html/ and removing downloaded file(s)..."
-tar -xzf moodle-latest-39.tgz
-mv moodle /var/www/html/
-chmod 777 /var/www/html/moodle
-rm moodle-latest-39.tgz
-roll "Changing a line in httpd.conf to automatically open Moodle as main-page and rebooting apache..."
-#To DO
-systemctl restart httpd
-roll "Setting permissions for apache..."
-mkdir /var/www/moodledata
-chmod 777 /var/www/moodledata
-chown apache:apache -R /var/www/moodledata/
-chown apache:apache -R /var/www/html/moodle/
-chcon -R --type httpd_sys_rw_content_t /var/www/moodledata/
-chcon -R --type httpd_sys_rw_content_t /var/www/html/moodle/
-setsebool -P httpd_can_network_connect 1
-systemctl restart httpd
-echo -e "${YEL}"
-roll "Done!"
-echo -e "${LPURPLE}========================================================${YEL}"
-}
 
 configure_moodle() {
 cat >/etc/httpd/conf.d/moodle.conf <<EOL
 <VirtualHost *:80>
- ServerName moodle.ijselu.local
+ ServerName moodle.groep5.local
  DocumentRoot /var/www/html/moodle
  DirectoryIndex index.php
 <Directory /var/www/html/moodle/>
@@ -185,38 +122,45 @@ cat >/etc/httpd/conf.d/moodle.conf <<EOL
  CustomLog /var/log/httpd/moodle_access.log combined
 </VirtualHost>
 EOL
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+}
 
 cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''AdminXO'\'';\' /var/www/html/moodle/config.php
+sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''Gengar'\'';\' /var/www/html/moodle/config.php
 sed -i 's#$CFG->wwwroot   = '\''http://example.com/moodle'\'';#$CFG->wwwroot   = '\''http://moodle.groep5.local'\'';#' /var/www/html/moodle/config.php
 sed -i 's#$CFG->dataroot  = '\''\/home\/example\/moodledata'\'';#$CFG->dataroot  = '\''\/var\/www\/moodledata'\'';#' /var/www/html/moodle/config.php
 echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
-}
+systemctl restart httpd
+
 configure_firewall() {
 roll "Configuring firewall settings..."
-firewall-cmd --add-service=http
-firewall-cmd --add-service=https
-firewall-cmd --runtime-to-permanent
+firewall-cmd --add-port=80/tcp --zone=public --permanent
+firewall-cmd --add-port=443/tcp --zone=public --permanent
+firewall-cmd --reload
 echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${NRML}"
 }
 
-
+end() {
+echo e- "${CYAN}^_^ Script completed, Moodle is reachable on: moodle.groep5.local ^_^${NC}${NRML}"
+}
 
 start
+selinux_passive
 change_hostname
+installing_dnf_utils
 install_httpd_apache
-start_and_enable_httpd_systemctl
-configuring_basic_html_page
-basic_html_page_check
-install_mariaDB_and_configure
 install_PHPreqsForHttpd
-install_moodle
+start_and_enable_httpd_systemctl
+download_install_permissions_for_noodle
 configure_moodle
-configure_firewall
+firewall
+end
