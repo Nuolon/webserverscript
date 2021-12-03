@@ -126,6 +126,9 @@ echo -e "${LPURPLE}========================================================${YEL
 configure_mariaDB_for_moodle() {
 roll "Configuring mariadb for moodle..."
 systemctl start mariadb
+systemctl enable mariadb
+systemctl start mariadb-server
+systemctl enable mariadb-server
 mysql -e "DELETE FROM mysql.user WHERE User='';"
 mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
 #mysql -e "DROP DATABASE test;DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';"
