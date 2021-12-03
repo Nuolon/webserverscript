@@ -81,7 +81,6 @@ roll "Starting download of PHP and good-to-have modules..."
 dnf -y install php php-common php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-gd php-mbstring php-xml php-json php-pecl-zip libzip php-intl
 roll "Restarting Apache/httpd and configuring a PHP test site..."
 systemctl restart httpd
-touch /var/www/html/test.php
 roll "Changing permissions on /var/www/html/ to allow editing..."
 sudo chmod 777 /var/www/html -R
 echo -e "${YEL}"
@@ -100,9 +99,10 @@ echo -e "${LPURPLE}========================================================${YEL
 }
 
 download_install_permissions_for_moodle() {
+roll "Starting download and installing Moodle..."
 echo -e "${YEL}"
 wget -c https://download.moodle.org/download.php/direct/stable311/moodle-3.11.4.tgz
-tar -xzf moodle-3.11.4.tgz -C /var/www/
+tar -xzvf moodle-3.11.4.tgz -C /var/www/
 chmod 775 -R /var/www/moodle
 chown apache:apache -R /var/www/moodle
 mkdir -p /var/www/moodledata
@@ -114,10 +114,40 @@ roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
 
+configure_mariaDB_for_moodle() {
+roll "Configuring mariadb for moodle..."
+systemctl start mariadb
+mysql -e "DELETE FROM mysql.user WHERE User='';"
+mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+#mysql -e "DROP DATABASE test;DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';"
+mysql -e "CREATE DATABASE moodledb;"
+mysql -e "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE TEMPORARY TABLES,DROP,INDEX,ALTER ON moodledb.* TO 'moodleadmin'@'localhost' IDENTIFIED BY 'Gengar'"
+mysql -e "SET PASSWORD FOR root@localhost = PASSWORD('herpderp');FLUSH PRIVILEGES;"
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+}
 
 configure_moodle() {
+roll "Configuring moodle itself..."
 echo -e "${YEL}"
-#cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
+cat >/etc/httpd/conf.d/moodle.conf <<EOL
+<VirtualHost *:80>
+ ServerName moodle.groep5.local
+ DocumentRoot /var/www/moodle
+ DirectoryIndex index.php
+<Directory /var/www/moodle/>
+ Options Indexes FollowSymLinks MultiViews
+ AllowOverride All
+ Order allow,deny
+ allow from all
+</Directory>
+ ErrorLog /var/log/httpd/moodle_error.log
+ CustomLog /var/log/httpd/moodle_access.log combined
+</VirtualHost>
+EOL
+
+cp /var/www/moodle/config-dist.php /var/www/moodle/config.php
 sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/html/moodle/config.php
@@ -128,22 +158,6 @@ echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 systemctl restart httpd
-
-cat >/etc/httpd/conf.d/moodle.conf <<EOL
-<VirtualHost *:80>
- ServerName moodle.groep5.local
- DocumentRoot /var/www/html/moodle
- DirectoryIndex index.php
-<Directory /var/www/html/moodle/>
- Options Indexes FollowSymLinks MultiViews
- AllowOverride All
- Order allow,deny
- allow from all
-</Directory>
- ErrorLog /var/log/httpd/moodle_error.log
- CustomLog /var/log/httpd/moodle_access.log combined
-</VirtualHost>
-EOL
 echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
@@ -172,6 +186,7 @@ install_httpd_apache
 install_PHPreqsForHttpd
 start_and_enable_httpd_systemctl
 download_install_permissions_for_moodle
+configure_mariaDB_for_moodle
 configure_moodle
-firewall
+configure_firewall
 end
