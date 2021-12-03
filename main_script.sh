@@ -148,7 +148,7 @@ install_moodle() {
 roll "Downloading Moodle 'latest' 3.9..."
 wget -c https://download.moodle.org/download.php/direct/stable39/moodle-latest-39.tgz
 roll "Moving files to /var/www/html/ and removing downloaded file(s)..."
-tar -xzvf moodle-latest-39.tgz
+tar -xzf moodle-latest-39.tgz
 mv moodle /var/www/html/
 chmod 777 /var/www/html/moodle
 rm moodle-latest-39.tgz
@@ -186,7 +186,7 @@ cat >/etc/httpd/conf.d/moodle.conf <<EOL
 </VirtualHost>
 EOL
 
-
+cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/html/www/moodle/config.php
