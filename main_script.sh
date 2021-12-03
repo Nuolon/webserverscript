@@ -189,7 +189,7 @@ EOL
 cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/html/www/moodle/config.php
+sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/html/moodle/config.php
 sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''AdminXO'\'';\' /var/www/html/moodle/config.php
 sed -i 's#$CFG->wwwroot   = '\''http://example.com/moodle'\'';#$CFG->wwwroot   = '\''http://moodle.groep5.local'\'';#' /var/www/html/moodle/config.php
 sed -i 's#$CFG->dataroot  = '\''\/home\/example\/moodledata'\'';#$CFG->dataroot  = '\''\/var\/www\/moodledata'\'';#' /var/www/html/moodle/config.php
