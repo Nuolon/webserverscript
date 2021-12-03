@@ -107,6 +107,19 @@ echo -e "${LPURPLE}========================================================${YEL
 
 
 configure_moodle() {
+
+cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
+sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
+sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
+sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/html/moodle/config.php
+sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''Gengar'\'';\' /var/www/html/moodle/config.php
+sed -i 's#$CFG->wwwroot   = '\''http://example.com/moodle'\'';#$CFG->wwwroot   = '\''http://moodle.groep5.local'\'';#' /var/www/html/moodle/config.php
+sed -i 's#$CFG->dataroot  = '\''\/home\/example\/moodledata'\'';#$CFG->dataroot  = '\''\/var\/www\/moodledata'\'';#' /var/www/html/moodle/config.php
+echo -e "${YEL}"
+roll "Done!"
+echo -e "${LPURPLE}========================================================${YEL}"
+systemctl restart httpd
+
 cat >/etc/httpd/conf.d/moodle.conf <<EOL
 <VirtualHost *:80>
  ServerName moodle.groep5.local
@@ -126,18 +139,6 @@ echo -e "${YEL}"
 roll "Done!"
 echo -e "${LPURPLE}========================================================${YEL}"
 }
-
-cp /var/www/html/moodle/config-dist.php /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbtype    = '\''pgsql'\'';\$CFG->dbtype    = '\''mariadb'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbname    = '\''moodle'\'';\$CFG->dbname    = '\''moodledb'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbuser    = '\''username'\'';\$CFG->dbuser    = '\''moodleadmin'\'';\' /var/www/html/moodle/config.php
-sed -i 's\$CFG->dbpass    = '\''password'\'';\$CFG->dbpass    = '\''Gengar'\'';\' /var/www/html/moodle/config.php
-sed -i 's#$CFG->wwwroot   = '\''http://example.com/moodle'\'';#$CFG->wwwroot   = '\''http://moodle.groep5.local'\'';#' /var/www/html/moodle/config.php
-sed -i 's#$CFG->dataroot  = '\''\/home\/example\/moodledata'\'';#$CFG->dataroot  = '\''\/var\/www\/moodledata'\'';#' /var/www/html/moodle/config.php
-echo -e "${YEL}"
-roll "Done!"
-echo -e "${LPURPLE}========================================================${YEL}"
-systemctl restart httpd
 
 configure_firewall() {
 roll "Configuring firewall settings..."
