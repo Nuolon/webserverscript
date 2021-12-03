@@ -171,7 +171,7 @@ installing_dnf_utils
 install_httpd_apache
 install_PHPreqsForHttpd
 start_and_enable_httpd_systemctl
-download_install_permissions_for_noodle
+download_install_permissions_for_moodle
 configure_moodle
 firewall
 end
