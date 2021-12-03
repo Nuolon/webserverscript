@@ -61,6 +61,7 @@ echo -e "${LPURPLE}========================================================${YEL
 installing_dnf_utils() {
 echo -e "${YEL}"
 dnf install -y dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+dnf module reset -y php
 dnf module enable -y php:remi-7.4
 echo -e "${YEL}"
 roll "Done!"
