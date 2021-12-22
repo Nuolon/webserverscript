@@ -1,0 +1,34 @@
+On zentyal:
+Create security groups
+- moodle-creator
+- moodle-manager
+
+create user
+- bind1 -> bind user
+
+
+### on moodle:
+- Administration > plugins > Authentication
+- Enable LDAP server and enter settings
+
+host: ldap://10.15.1.14
+page size: 250
+distinguished name: bind1@groep5.local
+password: Pa$$w0rd!
+MS ActiveDirectory
+Contexts: dc=groep5,dc=local
+Subcontexts: yes
+userattri: samaccountname
+memberatt: 1
+
+Manager context:
+CN=moodle-manager,CN=Groups,DC=groep5,DC=local
+
+Course creator context:
+CN=moodle-creator,CN=Groups,DC=groep5,DC=local
+
+Datamapping FN: givenName
+Datamapping SN: sn
+
+### Security policy > email verification uitzetten 
+
